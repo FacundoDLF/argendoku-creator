@@ -3,7 +3,12 @@
 export type Difficulty = "facil" | "medio" | "dificil" | "experto"
 export type PaperFormat = "a4" | "a5" | "letter"
 export type ColorProfile = "rgb" | "cmyk"
-export type PageKind = "puzzle" | "solution"
+export type PageKind = "puzzle" | "solution" | "blank"
+
+/** A user-inserted blank sheet — carries only identity; its title is a label. */
+export interface BlankSheet {
+  id: string
+}
 
 /** A single generated sudoku with its 81-cell grids. */
 export interface Puzzle {
