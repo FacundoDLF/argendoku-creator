@@ -1,16 +1,47 @@
-export default function Home() {
+"use client"
+
+// App shell: owns global state and composes header / toolbar / workspace / dialog.
+
+import { useState } from "react"
+
+import { AppHeader } from "@/components/argendo/app-header"
+import { ExportDialog } from "@/components/argendo/export-dialog"
+import { Toolbar } from "@/components/argendo/toolbar"
+import { Workspace } from "@/components/argendo/workspace"
+import { DEFAULT_QUANTITY } from "@/lib/argendo/config"
+import type { BookConfig, WorkMode } from "@/lib/argendo/types"
+import { useBook } from "@/lib/argendo/use-book"
+
+export default function Page() {
+  const [mode, setMode] = useState<WorkMode>("creacion")
+  const [config, setConfig] = useState<BookConfig>({
+    difficulty: "medio",
+    format: "a4",
+    quantity: DEFAULT_QUANTITY,
+  })
+  const [exportOpen, setExportOpen] = useState(false)
+
+  const book = useBook(config)
+  const patchConfig = (patch: Partial<BookConfig>) =>
+    setConfig((prev) => ({ ...prev, ...patch }))
+
   return (
-    <div className="flex min-h-screen items-center justify-center font-sans">
-      <main className="flex w-full max-w-3xl flex-col items-center gap-8 px-6 py-16 text-center sm:items-start sm:text-left">
-        <div className="flex flex-col gap-4">
-          <h1 className="text-4xl font-bold tracking-tight">
-            ArgenDo-Ku
-          </h1>
-          <p className="max-w-md text-lg text-muted-foreground">
-            To get started, send a prompt or modify this page directly.
-          </p>
-        </div>
+    <div className="min-h-screen bg-stone-900 font-sans text-amber-50">
+      <AppHeader mode={mode} onModeChange={setMode} />
+      <Toolbar
+        config={config}
+        onChange={patchConfig}
+        onExportPdf={() => setExportOpen(true)}
+      />
+      <main>
+        <Workspace book={book} />
       </main>
+
+      <ExportDialog
+        open={exportOpen}
+        onOpenChange={setExportOpen}
+        pageCount={book.pages.length}
+      />
     </div>
-  );
+  )
 }
