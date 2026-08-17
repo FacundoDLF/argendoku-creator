@@ -1,19 +1,40 @@
-// Widget: a paper sheet. Renders puzzle layout (2-up) or solutions layout (6-up).
+"use client"
+
+// Widget: a paper sheet. Puzzle sheets are editable (removable); solutions mirror.
+
+import { Trash2, X } from "lucide-react"
 
 import { DIFFICULTY_LABELS } from "@/lib/argendo/config"
-import type { BookPage, Puzzle } from "@/lib/argendo/types"
+import type { BookPage, PageItem } from "@/lib/argendo/types"
 import { SudokuGrid } from "./sudoku-grid"
 
-function PuzzleBlock({ puzzle }: { puzzle: Puzzle }) {
+function PuzzleBlock({
+  item,
+  onRemove,
+}: {
+  item: PageItem
+  onRemove: () => void
+}) {
+  const { puzzle, number } = item
   return (
-    <div className="flex flex-1 flex-col gap-2">
-      <div className="flex items-baseline justify-between">
+    <div className="group/puzzle flex flex-1 flex-col gap-2">
+      <div className="flex items-baseline justify-between gap-2">
         <h3 className="font-serif text-lg font-semibold text-paper-ink">
-          Puzle #{puzzle.id}
+          Puzle #{number}
         </h3>
-        <span className="rounded-full border border-paper-line-strong/40 px-2 py-0.5 text-[0.6rem] font-medium uppercase tracking-wide text-paper-ink/70">
-          {DIFFICULTY_LABELS[puzzle.difficulty]}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="rounded-full border border-paper-line-strong/40 px-2 py-0.5 text-[0.6rem] font-medium uppercase tracking-wide text-paper-ink/70">
+            {DIFFICULTY_LABELS[puzzle.difficulty]}
+          </span>
+          <button
+            type="button"
+            onClick={onRemove}
+            aria-label={`Eliminar puzle #${number}`}
+            className="flex size-6 items-center justify-center rounded-full border border-paper-line-strong/40 text-paper-ink/60 transition-colors hover:border-orange-700 hover:bg-orange-700 hover:text-paper"
+          >
+            <X className="size-3.5" />
+          </button>
+        </div>
       </div>
       <div className="mx-auto w-full max-w-[78%]">
         <SudokuGrid values={puzzle.given} />
@@ -22,13 +43,13 @@ function PuzzleBlock({ puzzle }: { puzzle: Puzzle }) {
   )
 }
 
-function SolutionBlock({ puzzle }: { puzzle: Puzzle }) {
+function SolutionBlock({ item }: { item: PageItem }) {
   return (
     <div className="flex flex-col gap-1">
       <span className="font-serif text-xs font-semibold text-paper-ink">
-        Puzle #{puzzle.id}
+        Puzle #{item.number}
       </span>
-      <SudokuGrid values={puzzle.solution} />
+      <SudokuGrid values={item.puzzle.solution} />
     </div>
   )
 }
@@ -37,9 +58,17 @@ interface PageCardProps {
   page: BookPage
   index: number
   total: number
+  onRemovePuzzle: (uid: string) => void
+  onRemovePage: (uids: string[]) => void
 }
 
-export function PageCard({ page, index, total }: PageCardProps) {
+export function PageCard({
+  page,
+  index,
+  total,
+  onRemovePuzzle,
+  onRemovePage,
+}: PageCardProps) {
   const isPuzzle = page.kind === "puzzle"
 
   return (
@@ -47,8 +76,12 @@ export function PageCard({ page, index, total }: PageCardProps) {
       <div className="relative aspect-[1/1.414] w-full rounded-sm bg-paper p-[7%] shadow-2xl shadow-black/60 ring-1 ring-black/30">
         {isPuzzle ? (
           <div className="flex h-full flex-col gap-6">
-            {page.puzzles.map((puzzle) => (
-              <PuzzleBlock key={puzzle.id} puzzle={puzzle} />
+            {page.items.map((item) => (
+              <PuzzleBlock
+                key={item.puzzle.uid}
+                item={item}
+                onRemove={() => onRemovePuzzle(item.puzzle.uid)}
+              />
             ))}
           </div>
         ) : (
@@ -57,8 +90,8 @@ export function PageCard({ page, index, total }: PageCardProps) {
               Soluciones
             </h3>
             <div className="grid flex-1 grid-cols-2 gap-x-4 gap-y-3">
-              {page.puzzles.map((puzzle) => (
-                <SolutionBlock key={puzzle.id} puzzle={puzzle} />
+              {page.items.map((item) => (
+                <SolutionBlock key={item.puzzle.uid} item={item} />
               ))}
             </div>
           </div>
@@ -70,7 +103,18 @@ export function PageCard({ page, index, total }: PageCardProps) {
       </div>
 
       <figcaption className="flex items-center justify-between px-1 text-xs text-amber-50/40">
-        <span>{isPuzzle ? "Puzles" : "Soluciones"}</span>
+        {isPuzzle ? (
+          <button
+            type="button"
+            onClick={() => onRemovePage(page.items.map((i) => i.puzzle.uid))}
+            className="flex items-center gap-1 rounded text-amber-50/50 transition-colors hover:text-orange-400"
+          >
+            <Trash2 className="size-3.5" />
+            Eliminar página
+          </button>
+        ) : (
+          <span className="italic">Generadas automáticamente</span>
+        )}
         <span>
           Página {index + 1} / {total}
         </span>

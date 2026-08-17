@@ -1,7 +1,10 @@
-// Deterministic sudoku generation: same id -> same puzzle across renders.
+// On-demand sudoku generation: each call mints one fresh, uniquely-seeded puzzle.
 
 import { DIFFICULTY_GIVENS } from "./config"
 import type { Difficulty, Puzzle } from "./types"
+
+/** Monotonic counter so every created puzzle gets a unique seed + uid. */
+let sequence = 0
 
 /** Valid base pattern for a filled sudoku board. */
 const pattern = (row: number, col: number) =>
@@ -28,8 +31,10 @@ function shuffle<T>(input: T[], rng: () => number): T[] {
   return arr
 }
 
-export function generatePuzzle(id: number, difficulty: Difficulty): Puzzle {
-  const rng = createRng(id * 2654435761 + difficulty.length)
+/** Create a single fresh puzzle of the given difficulty. */
+export function createPuzzle(difficulty: Difficulty): Puzzle {
+  sequence += 1
+  const rng = createRng(sequence * 2654435761 + difficulty.length)
   const digits = shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9], rng)
 
   const solution: number[] = new Array(81)
@@ -44,5 +49,10 @@ export function generatePuzzle(id: number, difficulty: Difficulty): Puzzle {
   )
   const given = solution.map((value, i) => (keep.has(i) ? value : null))
 
-  return { id, difficulty, given, solution }
+  return { uid: `pz-${sequence}`, difficulty, given, solution }
+}
+
+/** Create a batch of puzzles, all of the same difficulty. */
+export function createPuzzles(count: number, difficulty: Difficulty): Puzzle[] {
+  return Array.from({ length: count }, () => createPuzzle(difficulty))
 }

@@ -1,6 +1,6 @@
 "use client"
 
-// Feature: chunking/pagination. Turns a flat puzzle count into laid-out pages.
+// Feature: pure layout. Turns an owned puzzle list into laid-out book pages.
 
 import { useMemo } from "react"
 
@@ -8,8 +8,7 @@ import {
   SUDOKUS_PER_PAGE_PUZZLE,
   SUDOKUS_PER_PAGE_SOLUTION,
 } from "./config"
-import { generatePuzzle } from "./sudoku"
-import type { BookConfig, BookPage, Puzzle } from "./types"
+import type { BookPage, PageItem, Puzzle } from "./types"
 
 function chunk<T>(items: T[], size: number): T[][] {
   const pages: T[][] = []
@@ -26,22 +25,28 @@ export interface Book {
   solutionPageCount: number
 }
 
-export function useBook({ quantity, difficulty }: BookConfig): Book {
+/**
+ * Lay out a book from the current puzzle list.
+ * Puzzle sheets come first, solution sheets always last, and both share the
+ * same 1-based numbering derived from list order — so removing a puzzle also
+ * removes its mirrored solution automatically.
+ */
+export function useBook(puzzles: Puzzle[]): Book {
   return useMemo(() => {
-    const puzzles: Puzzle[] = Array.from({ length: quantity }, (_, i) =>
-      generatePuzzle(i + 1, difficulty),
-    )
+    const numbered: PageItem[] = puzzles.map((puzzle, i) => ({
+      puzzle,
+      number: i + 1,
+    }))
 
     const puzzlePages: BookPage[] = chunk(
-      puzzles,
+      numbered,
       SUDOKUS_PER_PAGE_PUZZLE,
-    ).map((group, i) => ({ id: `p-${i}`, kind: "puzzle", puzzles: group }))
+    ).map((items, i) => ({ id: `p-${i}`, kind: "puzzle", items }))
 
-    // Solutions always live at the very end of the book.
     const solutionPages: BookPage[] = chunk(
-      puzzles,
+      numbered,
       SUDOKUS_PER_PAGE_SOLUTION,
-    ).map((group, i) => ({ id: `s-${i}`, kind: "solution", puzzles: group }))
+    ).map((items, i) => ({ id: `s-${i}`, kind: "solution", items }))
 
     return {
       pages: [...puzzlePages, ...solutionPages],
@@ -49,5 +54,5 @@ export function useBook({ quantity, difficulty }: BookConfig): Book {
       puzzlePageCount: puzzlePages.length,
       solutionPageCount: solutionPages.length,
     }
-  }, [quantity, difficulty])
+  }, [puzzles])
 }
