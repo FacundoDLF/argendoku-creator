@@ -10,11 +10,10 @@ import { Toolbar } from "@/components/argendo/toolbar"
 import { Workspace } from "@/components/argendo/workspace"
 import { DEFAULT_QUANTITY } from "@/lib/argendo/config"
 import { createPuzzles } from "@/lib/argendo/sudoku"
-import type { BookConfig, Puzzle, WorkMode } from "@/lib/argendo/types"
+import type { BookConfig, Puzzle } from "@/lib/argendo/types"
 import { useBook } from "@/lib/argendo/use-book"
 
 export default function Page() {
-  const [mode, setMode] = useState<WorkMode>("creacion")
   const [config, setConfig] = useState<BookConfig>({
     difficulty: "medio",
     format: "a4",
@@ -50,7 +49,7 @@ export default function Page() {
 
   return (
     <div className="min-h-screen bg-stone-900 font-sans text-amber-50">
-      <AppHeader mode={mode} onModeChange={setMode} />
+      <AppHeader />
       <Toolbar
         config={config}
         hasPuzzles={puzzles.length > 0}

@@ -1,18 +1,8 @@
-"use client"
-
-// Widget: sticky header with brand + Juego/Creación segmented control.
+// Widget: sticky header with brand identity.
 
 import { Grid3x3 } from "lucide-react"
 
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import type { WorkMode } from "@/lib/argendo/types"
-
-interface AppHeaderProps {
-  mode: WorkMode
-  onModeChange: (mode: WorkMode) => void
-}
-
-export function AppHeader({ mode, onModeChange }: AppHeaderProps) {
+export function AppHeader() {
   return (
     <header className="sticky top-0 z-30 border-b border-stone-700/70 bg-stone-800/95 backdrop-blur supports-backdrop-filter:bg-stone-800/80">
       <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-4 px-4 py-3 sm:px-6">
@@ -30,26 +20,9 @@ export function AppHeader({ mode, onModeChange }: AppHeaderProps) {
           </div>
         </div>
 
-        <Tabs
-          value={mode}
-          onValueChange={(value) => onModeChange(value as WorkMode)}
-        >
-          <TabsList className="bg-stone-900/70">
-            <TabsTrigger
-              value="juego"
-              disabled
-              className="px-3 text-amber-50/40"
-            >
-              Juego
-            </TabsTrigger>
-            <TabsTrigger
-              value="creacion"
-              className="px-3 data-active:bg-orange-700 data-active:text-amber-50"
-            >
-              Creación
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
+        <span className="rounded-md bg-stone-900/70 px-3 py-1.5 text-sm font-medium text-amber-50/70">
+          Modo Creación
+        </span>
       </div>
     </header>
   )

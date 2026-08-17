@@ -4,7 +4,6 @@ export type Difficulty = "facil" | "medio" | "dificil" | "experto"
 export type PaperFormat = "a4" | "a5" | "letter"
 export type ColorProfile = "rgb" | "cmyk"
 export type PageKind = "puzzle" | "solution"
-export type WorkMode = "juego" | "creacion"
 
 /** A single generated sudoku with its 81-cell grids. */
 export interface Puzzle {
